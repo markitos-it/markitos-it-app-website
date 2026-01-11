@@ -9,7 +9,7 @@ spec:
   selector:
     matchLabels:
       app: markitos-it-app-website-deployment
-  replicas: 1
+  replicas: 3
   strategy:
     rollingUpdate:
       maxSurge: 25%
@@ -20,6 +20,8 @@ spec:
       labels:
         app: markitos-it-app-website-deployment
     spec:
+      imagePullSecrets:
+      - name: gcp-artifact-registry-secret
       containers:
       - name: markitos-it-app-website-container
         image: europe-southwest1-docker.pkg.dev/markitos-it-images/private/markitos-it-app-website:1.0.0
@@ -46,7 +48,7 @@ spec:
           periodSeconds: 10
         ports:
         - containerPort:  80
-          name: markitos-it-app-website-deployment-port
+          name: http-port
           protocol: TCP
         volumeMounts:
         - name: localtime
@@ -56,3 +58,19 @@ spec:
           hostPath:
             path: /usr/share/zoneinfo/Europe/Madrid
       restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: markitos-it-app-website-service
+  namespace: default
+spec:
+  type: NodePort
+  selector:
+    app: markitos-it-app-website-deployment
+  ports:
+  - port: 80
+    targetPort: 80
+    nodePort: 30080
+    protocol: TCP
+    name: http
