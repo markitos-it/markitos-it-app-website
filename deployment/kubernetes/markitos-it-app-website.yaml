@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name:  markitos-it-app-website-deployment
+  namespace: default
+  labels:
+    app: markitos-it-app-website-deployment
+spec:
+  selector:
+    matchLabels:
+      app: markitos-it-app-website-deployment
+  replicas: 1
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: markitos-it-app-website-deployment
+    spec:
+      containers:
+      - name: markitos-it-app-website-container
+        image: europe-southwest1-docker.pkg.dev/markitos-it-images/private/markitos-it-app-website:1.0.0
+        resources:
+          requests:
+            cpu: 100m
+            memory: 100Mi
+        livenessProbe:
+          tcpSocket:
+            port: 80
+          initialDelaySeconds: 5
+          timeoutSeconds: 5
+          successThreshold: 1
+          failureThreshold: 3
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 5
+          timeoutSeconds: 2
+          successThreshold: 1
+          failureThreshold: 3
+          periodSeconds: 10
+        ports:
+        - containerPort:  80
+          name: markitos-it-app-website-deployment-port
+          protocol: TCP
+        volumeMounts:
+        - name: localtime
+          mountPath: /etc/localtime
+      volumes:
+        - name: localtime
+          hostPath:
+            path: /usr/share/zoneinfo/Europe/Madrid
+      restartPolicy: Always

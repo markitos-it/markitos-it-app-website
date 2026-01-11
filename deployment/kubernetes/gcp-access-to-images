@@ -1,0 +1,124 @@
+#!/bin/bash
+# Configuración para que Kubernetes pueda hacer PULL de imágenes privadas
+# desde GCP Artifact Registry: europe-southwest1-docker.pkg.dev/markitos-it-images/private
+
+# =============================================================================
+# OPCIÓN 1: CLUSTER GKE (Google Kubernetes Engine)
+# =============================================================================
+# Si tu cluster está en GKE, los nodos YA tienen acceso por defecto si:
+# - El cluster y Artifact Registry están en el mismo proyecto
+# - Los nodos tienen el scope correcto (viene por defecto)
+#
+# NO NECESITAS HACER NADA ADICIONAL en este caso.
+# El cluster puede hacer pull directamente.
+#
+# Para verificar que funciona:
+# kubectl run test --image=europe-southwest1-docker.pkg.dev/markitos-it-images/private/markitos-it-app-website:1.0.0
+#
+# =============================================================================
+
+# =============================================================================
+# OPCIÓN 2: CLUSTER FUERA DE GCP (On-premise, K3s, otro cloud, etc.)
+# =============================================================================
+# Si tu cluster NO está en GKE, necesitas configurar autenticación manual.
+
+# -----------------------------------------------------------------------------
+# PASO 1: CREAR SERVICE ACCOUNT EN GCP PARA LEER IMÁGENES
+# -----------------------------------------------------------------------------
+PROJECT_ID="markitos-it-images"
+REGION="europe-southwest1"
+REPOSITORY="private"
+SA_NAME="k8s-image-puller"
+
+echo "Creando service account para pull de imágenes..."
+gcloud iam service-accounts create ${SA_NAME} \
+  --project=${PROJECT_ID} \
+  --display-name="Kubernetes Image Puller" \
+  --description="Service account para que Kubernetes haga pull de imágenes privadas"
+
+# -----------------------------------------------------------------------------
+# PASO 2: ASIGNAR PERMISOS DE LECTURA AL SERVICE ACCOUNT
+# -----------------------------------------------------------------------------
+# El rol "Artifact Registry Reader" permite solo leer/descargar imágenes
+echo "Asignando permisos de lectura..."
+gcloud artifacts repositories add-iam-policy-binding ${REPOSITORY} \
+  --project=${PROJECT_ID} \
+  --location=${REGION} \
+  --member="serviceAccount:${SA_NAME}@${PROJECT_ID}.iam.gserviceaccount.com" \
+  --role="roles/artifactregistry.reader"
+
+# -----------------------------------------------------------------------------
+# PASO 3: CREAR CLAVE JSON DEL SERVICE ACCOUNT
+# -----------------------------------------------------------------------------
+# IMPORTANTE: Esta clave permite acceso permanente, guárdala de forma segura
+# Se guarda en nogit/gcp/ que está en .gitignore para evitar subirla al repo
+echo "Generando clave JSON..."
+mkdir -p nogit/gcp
+gcloud iam service-accounts keys create nogit/gcp/k8s-image-puller-key.json \
+  --project=${PROJECT_ID} \
+  --iam-account=${SA_NAME}@${PROJECT_ID}.iam.gserviceaccount.com
+
+echo "✓ Clave JSON creada: nogit/gcp/k8s-image-puller-key.json"
+
+# -----------------------------------------------------------------------------
+# PASO 4: CREAR SECRET EN KUBERNETES CON LAS CREDENCIALES
+# -----------------------------------------------------------------------------
+# Este secret contiene las credenciales para autenticarse con Artifact Registry
+echo "Creando secret en Kubernetes..."
+kubectl create secret docker-registry gcp-artifact-registry-secret \
+  --docker-server=europe-southwest1-docker.pkg.dev \
+  --docker-username=_json_key \
+  --docker-password="$(cat nogit/gcp/k8s-image-puller-key.json)" \
+  --docker-email=unused@unused.com \
+  --namespace=default
+
+echo "✓ Secret 'gcp-artifact-registry-secret' creado en namespace default"
+
+# -----------------------------------------------------------------------------
+# PASO 5: USAR EL SECRET EN TUS DEPLOYMENTS
+# -----------------------------------------------------------------------------
+# Añade esta sección a tu deployment YAML en spec.template.spec:
+#
+#   spec:
+#     imagePullSecrets:
+#     - name: gcp-artifact-registry-secret
+#     containers:
+#     - name: markitos-it-app-website-container
+#       image: europe-southwest1-docker.pkg.dev/markitos-it-images/private/markitos-it-app-website:1.0.0
+#
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# VERIFICACIÓN
+# -----------------------------------------------------------------------------
+echo ""
+echo "============================================================================="
+echo "CONFIGURACIÓN COMPLETADA"
+echo "============================================================================="
+echo ""
+echo "Para verificar que funciona:"
+echo ""
+echo "1. Actualiza tu deployment con imagePullSecrets (ver ejemplo arriba)"
+echo "2. Aplica el deployment:"
+echo "   kubectl apply -f deployment/kubernetes/markitos-it-app-website.yaml"
+echo ""
+echo "3. Verifica que el pod descarga la imagen correctamente:"
+echo "   kubectl get pods"
+echo "   kubectl describe pod <nombre-del-pod>"
+echo ""
+echo "Si ves 'Successfully pulled image', funciona correctamente."
+echo ""
+echo "============================================================================="
+echo ""
+
+# =============================================================================
+# LIMPIEZA DE SEGURIDAD
+# =============================================================================
+# IMPORTANTE: Elimina la clave JSON después de crear el secret
+# echo "Eliminando clave JSON local por seguridad..."
+# rm nogit/gcp/k8s-image-puller-key.json
+#
+# Si necesitas recrear el secret:
+# kubectl delete secret gcp-artifact-registry-secret --namespace=default
+# Y vuelve a ejecutar los pasos 3 y 4
+# =============================================================================
