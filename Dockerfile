@@ -1,10 +1,22 @@
-FROM nginx:alpine
+FROM golang:1.23-alpine AS builder
 
-COPY index.html /usr/share/nginx/html/
-COPY *.css /usr/share/nginx/html/
-COPY *.js /usr/share/nginx/html/
+WORKDIR /build
 
-EXPOSE 80
+COPY go.mod ./
+RUN go mod download
 
-ENTRYPOINT ["nginx"]
-CMD ["-g", "daemon off;"]
+COPY . .
+
+RUN CGO_ENABLED=0 GOOS=linux go build -o app cmd/app/main.go
+
+FROM alpine:latest
+
+RUN apk --no-cache add ca-certificates
+
+WORKDIR /app
+
+COPY --from=builder /build/app .
+
+EXPOSE 8080
+
+CMD ["./app"]

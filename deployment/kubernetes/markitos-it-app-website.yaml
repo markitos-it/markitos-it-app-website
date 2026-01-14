@@ -1,76 +1,103 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name:  markitos-it-app-website-deployment
+  # Identificador único del despliegue en el clúster.
+  name: markitos-it-app-website-deployment
   namespace: default
   labels:
+    # Etiqueta organizativa para agrupar recursos relacionados.
     app: markitos-it-app-website-deployment
 spec:
+  # El selector debe ser inmutable y coincidir exactamente con las etiquetas del Pod (template).
   selector:
     matchLabels:
       app: markitos-it-app-website-deployment
+  
   replicas: 3
+  
   strategy:
     rollingUpdate:
-      maxSurge: 25%
-      maxUnavailable: 25%
+      maxSurge: 1       # Crea un pod extra antes de eliminar el antiguo.
+      maxUnavailable: 0 # Nunca permite que haya menos de 3 pods dando servicio.
     type: RollingUpdate
+
   template:
     metadata:
+      # Estas etiquetas permiten al Deployment y al Service identificar a sus Pods.
       labels:
         app: markitos-it-app-website-deployment
     spec:
+      # Credenciales para descargar la imagen desde el registro privado de GCP.
       imagePullSecrets:
       - name: gcp-artifact-registry-secret
+      
       containers:
       - name: markitos-it-app-website-container
         image: europe-southwest1-docker.pkg.dev/markitos-it-images/private/markitos-it-app-website:1.0.0
+        
+        # Gestión de Recursos:
+        # Usamos un modelo "Burstable" permitiendo ráfagas de CPU ilimitadas 
+        # según disponibilidad del nodo, pero protegiendo la RAM con límites.
         resources:
           requests:
             cpu: 100m
             memory: 100Mi
+          limits:
+            memory: 256Mi
+        
+        # Configuración de zona horaria mediante entorno para evitar dependencias del host.
+        env:
+        - name: TZ
+          value: "Europe/Madrid"
+
+        # LivenessProbe: Comprueba que el servidor web responde. 
+        # Si falla 3 veces, Kubernetes reinicia el contenedor (Auto-curación).
         livenessProbe:
-          tcpSocket:
+          httpGet:
+            path: /
             port: 80
-          initialDelaySeconds: 5
+          initialDelaySeconds: 10
           timeoutSeconds: 5
-          successThreshold: 1
-          failureThreshold: 3
-          periodSeconds: 10
+          periodSeconds: 15
+
+        # ReadinessProbe: Determina si el Pod está listo para recibir usuarios.
+        # Si falla, el tráfico del Service se detiene hacia este Pod específico.
         readinessProbe:
           httpGet:
             path: /
             port: 80
           initialDelaySeconds: 5
           timeoutSeconds: 2
-          successThreshold: 1
-          failureThreshold: 3
           periodSeconds: 10
+
+        # Definición del puerto donde la aplicación escucha internamente.
         ports:
-        - containerPort:  80
+        - containerPort: 80
           name: http-port
           protocol: TCP
-        volumeMounts:
-        - name: localtime
-          mountPath: /etc/localtime
-      volumes:
-        - name: localtime
-          hostPath:
-            path: /usr/share/zoneinfo/Europe/Madrid
+      
+      # Garantiza que el contenedor siempre se intente reiniciar ante fallos críticos.
       restartPolicy: Always
+
 ---
+
 apiVersion: v1
 kind: Service
 metadata:
+  # Nombre del balanceador interno de carga.
   name: markitos-it-app-website-service
   namespace: default
 spec:
+  # NodePort permite el acceso externo a través de la IP de cualquier nodo del clúster.
   type: NodePort
+  
+  # Crucial: El Service utiliza este selector para encontrar los Pods del Deployment anterior.
   selector:
     app: markitos-it-app-website-deployment
+  
   ports:
-  - port: 80
-    targetPort: 80
-    nodePort: 30080
+  - port: 80           # Puerto expuesto dentro del clúster.
+    targetPort: 80     # Puerto real de la aplicación en el contenedor.
+    nodePort: 30080    # Puerto manual asignado para acceso desde el exterior.
     protocol: TCP
-    name: http
+    name: http-port

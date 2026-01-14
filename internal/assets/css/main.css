@@ -26,7 +26,6 @@ body {
     min-height: 100vh;
 }
 
-/* Sidebar */
 .sidebar {
     background-color: var(--bg-sidebar);
     color: var(--white);
@@ -57,7 +56,6 @@ body {
     color: var(--white);
 }
 
-/* Main Content */
 .content {
     padding: 2rem;
     overflow-y: auto;
@@ -74,7 +72,6 @@ header h1 {
     gap: 1.5rem;
 }
 
-/* Cards */
 .card {
     background: var(--white);
     border-radius: 12px;
@@ -89,7 +86,7 @@ header h1 {
 
 .card-image {
     height: 180px;
-    background: #e2e8f0; /* Placeholder para imagen */
+    background: #e2e8f0;
 }
 
 .card-body {
@@ -115,7 +112,6 @@ header h1 {
     font-weight: bold;
 }
 
-/* Footer */
 .footer-bar {
     grid-column: 1 / -1;
     background-color: #0f172a;
