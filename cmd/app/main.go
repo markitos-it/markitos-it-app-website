@@ -15,6 +15,10 @@ func main() {
 	mux.Handle("/assets/", http.StripPrefix("/assets/", http.FileServer(http.FS(assetsFS))))
 
 	mux.HandleFunc("/", handlers.IndexHandler)
+	mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte("OK"))
+	})
 
 	addr := "0.0.0.0:8080"
 	log.Printf("Server starting on http://%s", addr)

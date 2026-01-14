@@ -1,0 +1,8 @@
+.git
+.github
+dist
+nogit
+bin
+*.md
+Makefile
+deployment
