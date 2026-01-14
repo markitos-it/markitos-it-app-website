@@ -1,6 +1,6 @@
 .DEFAULT_GOAL := help
 
-.PHONY: help app-go-start app-go-build app-docker-local-build app-docker-local-start app-clean app-deploy-tag app-delete-tag
+.PHONY: help app-go-start app-go-build app-docker-local-build app-docker-local-start app-clean app-deploy-tag app-delete-tag k8s-local-forward
 
 help:
 	@echo "📋 Available commands:"
@@ -12,6 +12,7 @@ help:
 	@echo "  make app-clean                 - Remove dist/ and Docker :local image"
 	@echo "  make app-deploy-tag <version>  - Create and push git tag (e.g., 1.2.3)"
 	@echo "  make app-delete-tag <version>  - Delete git tag locally and remotely"
+	@echo "  make k8s-local-forward         - Forward K8s service to localhost:8080"
 	@echo ""
 
 app-go-start:
@@ -34,6 +35,8 @@ app-deploy-tag:
 app-delete-tag:
 	bash bin/app/delete-tag.sh $(filter-out $@,$(MAKECMDGOALS))
 
+k8s-local-forward:
+	bash bin/k8s/local-forward.sh
 
 %:
 	@:
