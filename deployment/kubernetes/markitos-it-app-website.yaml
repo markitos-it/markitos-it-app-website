@@ -40,6 +40,16 @@ spec:
         env:
         - name: TZ
           value: "Europe/Madrid"
+        - name: DATABASE_HOST
+          value: "markitos-it-service-storage-service"
+        - name: DATABASE_PORT
+          value: "5432"
+        - name: DATABASE_NAME
+          value: "markitosit"
+        - name: DATABASE_USER
+          value: "markitosit"
+        - name: DATABASE_PASSWORD
+          value: "markitosit"
 
         livenessProbe:
           httpGet:
@@ -74,10 +84,8 @@ metadata:
   namespace: default
 spec:
   type: NodePort
-  
   selector:
-    app: markitos-it-app-website-deployment
-  
+    app: markitos-it-app-website-deployment  
   ports:
   - port: 8080
     targetPort: 8080

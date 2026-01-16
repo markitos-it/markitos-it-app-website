@@ -2,42 +2,52 @@ package handlers
 
 import (
 	"html/template"
+	"log"
 	"net/http"
 
+	"markitos-it-app-website/internal/domain/repository"
 	"markitos-it-app-website/internal/templates"
 )
 
 type IndexModel struct {
 	Title string
-	Posts []Post
+	Posts []PostView
 }
 
-type Post struct {
-	Title       string
-	Description string
-	Tag         string
+type PostView struct {
+	Title   string
+	Content string
+	Date    string
 }
 
-func IndexHandler(w http.ResponseWriter, r *http.Request) {
+type IndexHandler struct {
+	postRepo repository.PostRepository
+}
+
+func NewIndexHandler(postRepo repository.PostRepository) *IndexHandler {
+	return &IndexHandler{postRepo: postRepo}
+}
+
+func (h *IndexHandler) Handle(w http.ResponseWriter, r *http.Request) {
+	posts, err := h.postRepo.GetAll()
+	if err != nil {
+		log.Printf("Error fetching posts: %v", err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+
+	postViews := make([]PostView, len(posts))
+	for i, post := range posts {
+		postViews[i] = PostView{
+			Title:   post.Title,
+			Content: post.Content,
+			Date:    post.CreatedAt.Format("2006-01-02"),
+		}
+	}
+
 	model := IndexModel{
 		Title: "Dashboard de Contenido",
-		Posts: []Post{
-			{
-				Title:       "Introducción a JS Moderno",
-				Description: "Aprende las bases de ES6+ sin morir en el intento.",
-				Tag:         "Tutorial",
-			},
-			{
-				Title:       "CSS Grid vs Flexbox",
-				Description: "¿Cuándo usar cada uno? Guía definitiva para 2026.",
-				Tag:         "Diseño",
-			},
-			{
-				Title:       "Optimización Web",
-				Description: "Cómo lograr un 100 en Lighthouse fácilmente.",
-				Tag:         "Performance",
-			},
-		},
+		Posts: postViews,
 	}
 
 	templatesFS := templates.GetTemplatesFS()

@@ -1,2 +1,22 @@
-nogit
-dist
+# Binaries
+*.exe
+*.dll
+*.so
+*.dylib
+dist/
+
+# Test artifacts
+*.test
+*.out
+coverage.*
+
+# Environment
+.env
+.env.local
+
+# Go workspace
+go.work
+go.work.sum
+
+# Secrets
+nogit/
