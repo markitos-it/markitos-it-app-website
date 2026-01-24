@@ -1,0 +1,28 @@
+{{define "content"}}
+<div class="home-layout">
+    {{template "sidebar" .}}
+
+    <main class="home-main">
+        <div class="results-info">{{.ResultsCount}} packages found</div>
+        <div class="package-grid">
+            {{range .Packages}}
+            <div class="package-card" onclick="location.href='/docs'">
+                <div class="card-top">
+                    <div class="pkg-icon {{.IconClass}}">{{.Icon}}</div>
+                    <div class="pkg-info">
+                        <h3>{{.Name}}</h3>
+                        <span class="pkg-ver">{{.Version}}</span>
+                    </div>
+                    <span class="badge">{{.Badge}}</span>
+                </div>
+                <p class="pkg-desc">{{.Description}}</p>
+                <div class="card-bottom">
+                    <span>⭐ {{.Stars}}</span>
+                    <span>Updated {{.UpdatedAgo}}</span>
+                </div>
+            </div>
+            {{end}}
+        </div>
+    </main>
+</div>
+{{end}}

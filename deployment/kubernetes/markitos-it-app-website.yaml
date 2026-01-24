@@ -1,3 +1,41 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: markitos-it-html-config
+  namespace: default
+data:
+  generate-html.sh: |
+    #!/bin/sh
+    # No escapamos las variables con \, dejamos que el shell las sustituya
+    cat > /html/index.html <<EOF
+    <!DOCTYPE html>
+    <html lang="es">
+    <head>
+        <meta charset="UTF-8">
+        <title>Markitos IT - $POD_NAME</title>
+        <style>
+            body { font-family: sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+            .container { background: rgba(0,0,0,0.3); padding: 2rem; border-radius: 10px; backdrop-filter: blur(5px); }
+            .value { color: #FFD700; font-family: monospace; font-weight: bold; }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1>🚀 Markitos IT</h1>
+            <div style="text-align: left;">
+                <p>🖥️ <b>Hostname:</b> <span class="value">$HOSTNAME</span></p>
+                <p>📦 <b>Pod:</b> <span class="value">$POD_NAME</span></p>
+                <p>🌐 <b>IP:</b> <span class="value">$POD_IP</span></p>
+                <p>🏷️ <b>NS:</b> <span class="value">$POD_NAMESPACE</span></p>
+                <p>🖧 <b>Nodo:</b> <span class="value">$NODE_NAME</span></p>
+            </div>
+            <hr>
+            <small>⏰ Generado: $(date '+%Y-%m-%d %H:%M:%S')</small>
+        </div>
+    </body>
+    </html>
+    EOF
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -13,18 +51,52 @@ spec:
       labels:
         app: markitos-it-app-website-pods
     spec:
-      imagePullSecrets:
-      - name: gcp-artifact-registry-secret
+      initContainers:
+      - name: generate-html
+        image: busybox:latest
+        command: ['/bin/sh', '/scripts/generate-html.sh']
+        env:
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: POD_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
+        - name: NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        volumeMounts:
+        - name: html-volume
+          mountPath: /html
+        - name: scripts-volume
+          mountPath: /scripts
       containers:
       - name: markitos-it-app-website-container
-        image: europe-southwest1-docker.pkg.dev/markitos-it-images/private/markitos-it-app-website:1.2.0
+        image: nginx:latest
         ports:
-        - containerPort: 8080
+        - containerPort: 80
+        volumeMounts:
+        - name: html-volume
+          mountPath: /usr/share/nginx/html
         readinessProbe:
           httpGet:
             path: /
-            port: 8080
+            port: 80
           initialDelaySeconds: 5
+      volumes:
+      - name: html-volume
+        emptyDir: {}
+      - name: scripts-volume
+        configMap:
+          name: markitos-it-html-config
+          defaultMode: 0755
 ---
 apiVersion: v1
 kind: Service
@@ -37,7 +109,7 @@ spec:
     app:  markitos-it-app-website-pods
   ports:
   - port: 80
-    targetPort: 8080
+    targetPort: 80
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
@@ -49,7 +121,7 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-  - host: www.markitos.it
+  - host: markitos.local
     http:
       paths:
       - path: /

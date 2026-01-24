@@ -1,0 +1,19 @@
+/* LAYOUT DASHBOARD (INDEX) */
+.home-layout { display: grid; grid-template-columns: 260px 1fr; max-width: 1400px; margin: 20px auto; gap: 30px; padding: 0 20px; }
+.filter-title { font-size: 0.8rem; text-transform: uppercase; color: var(--text-light); margin-bottom: 15px; }
+.filter-block label { display: block; margin-bottom: 10px; font-size: 0.9rem; cursor: pointer; }
+
+.results-info { margin-bottom: 20px; font-weight: bold; color: var(--text-light); }
+.package-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 20px; }
+
+/* PACKAGE CARD */
+.package-card { background: var(--white); border: 1px solid var(--border); border-radius: 4px; padding: 20px; cursor: pointer; transition: 0.2s; }
+.package-card:hover { border-color: var(--accent); box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+.card-top { display: flex; gap: 15px; align-items: center; margin-bottom: 15px; }
+.pkg-icon { width: 45px; height: 45px; background: var(--accent); color: white; display: grid; place-items: center; border-radius: 4px; font-weight: bold; }
+.pkg-icon.purple { background: #6f42c1; }
+.pkg-info h3 { margin: 0; font-size: 1.1rem; }
+.pkg-ver { font-size: 0.8rem; color: var(--text-light); }
+.badge { background: #eef6ff; color: var(--accent); font-size: 0.7rem; padding: 2px 8px; border-radius: 10px; margin-left: auto; }
+.pkg-desc { font-size: 0.9rem; color: #555; height: 40px; overflow: hidden; }
+.card-bottom { margin-top: 15px; padding-top: 15px; border-top: 1px solid #f0f0f0; display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--text-light); }

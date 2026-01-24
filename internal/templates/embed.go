@@ -5,9 +5,11 @@ import (
 	"io/fs"
 )
 
-//go:embed *.html
+//go:embed shared/*.html shared/*.css shared/*.js
+//go:embed home/*/*.html home/*/*.css home/*/*.js
+//go:embed docs/*/*.html docs/*/*.css docs/*/*.js
 var embedFS embed.FS
 
-func GetTemplatesFS() fs.FS {
+func FS() fs.FS {
 	return embedFS
 }
