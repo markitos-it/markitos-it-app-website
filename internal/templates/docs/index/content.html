@@ -1,18 +1,68 @@
 {{define "content"}}
-<div class="docs-container">
-    {{template "sidebar" .}}
+<div class="docs-dashboard-container">
+    <div class="docs-header">
+        <h1 class="docs-title">Documentation Dashboard</h1>
+        <p class="docs-subtitle">Browse and search through all documentation</p>
+    </div>
 
-    <main class="border-block docs-main prose">
-        {{.Content}}
-    </main>
+    <div class="docs-filters">
+        <div class="filter-group">
+            <label class="filter-label">Category</label>
+            <div class="filter-pills" id="categoryFilters">
+                {{range .Categories}}
+                <button class="filter-pill {{if eq . "All"}}active{{end}}" data-category="{{.}}">
+                    {{.}}
+                </button>
+                {{end}}
+            </div>
+        </div>
 
-    <aside class="border-block docs-toc">
-        <h4 class="sidebar-title">On this page</h4>
-        <ul class="sidebar-list">
-            {{range .TableOfContents}}
-            <li><a href="#{{.Anchor}}" class="toc-link">{{.Text}}</a></li>
-            {{end}}
-        </ul>
-    </aside>
+        <div class="filter-group">
+            <label class="filter-label">Search</label>
+            <input 
+                type="text" 
+                id="searchInput" 
+                class="search-input" 
+                placeholder="Search documentation..."
+            />
+        </div>
+    </div>
+
+    <div class="docs-grid" id="docsGrid">
+        {{range .Documents}}
+        <article 
+            class="doc-card" 
+            data-id="{{.ID}}"
+            data-category="{{.Category}}"
+            data-tags="{{range .Tags}}{{.}} {{end}}"
+            data-title="{{.Title}}"
+            data-description="{{.Description}}"
+        >
+            <div class="doc-card-header">
+                <span class="doc-category-badge">{{.Category}}</span>
+                <span class="doc-date">{{.UpdatedAt}}</span>
+            </div>
+            <h3 class="doc-title">{{.Title}}</h3>
+            <p class="doc-description">{{.Description}}</p>
+            <div class="doc-tags">
+                {{range .Tags}}
+                <span class="doc-tag">{{.}}</span>
+                {{end}}
+            </div>
+            <button class="doc-action-btn" onclick="viewDocument('{{.ID}}')">
+                View Document →
+            </button>
+        </article>
+        {{end}}
+    </div>
+
+    <div class="no-results" id="noResults" style="display: none;">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"></circle>
+            <path d="m21 21-4.35-4.35"></path>
+        </svg>
+        <h3>No documents found</h3>
+        <p>Try adjusting your filters or search terms</p>
+    </div>
 </div>
 {{end}}

@@ -1,0 +1,76 @@
+{{define "content"}}
+<div class="doc-view-container">
+    <nav class="doc-breadcrumb">
+        <a href="/docs" class="breadcrumb-link">← Back to Docs</a>
+        <span class="breadcrumb-separator">/</span>
+        <span class="breadcrumb-current">{{.Category}}</span>
+    </nav>
+
+    <article class="doc-article">
+        <header class="doc-header">
+            <div class="doc-meta">
+                <span class="doc-category-badge">{{.Category}}</span>
+                <span class="doc-date">{{.UpdatedAt}}</span>
+            </div>
+            <h1 class="doc-main-title">{{.Title}}</h1>
+            <p class="doc-subtitle">{{.Description}}</p>
+            <div class="doc-tags-list">
+                {{range .Tags}}
+                <span class="doc-tag-item">{{.}}</span>
+                {{end}}
+            </div>
+        </header>
+
+        {{if .CoverImage}}
+        <div class="doc-cover-image">
+            <img src="{{.CoverImage}}" alt="{{.Title}}" loading="lazy">
+        </div>
+        {{end}}
+
+        <div class="doc-content prose">
+            {{.Content}}
+        </div>
+
+        <footer class="doc-footer">
+            <div class="doc-footer-info">
+                <p>Last updated: {{.UpdatedAt}}</p>
+            </div>
+            <div class="doc-footer-actions">
+                <a href="/docs" class="doc-btn-secondary">← Back to Docs</a>
+            </div>
+        </footer>
+    </article>
+
+    <aside class="doc-sidebar">
+        <div class="doc-toc-container">
+            <h3 class="doc-toc-title">Table of Contents</h3>
+            <nav class="doc-toc" id="tableOfContents">
+                <!-- Generated dynamically by JavaScript -->
+            </nav>
+        </div>
+
+        <div class="doc-share-container">
+            <h3 class="doc-share-title">Share</h3>
+            <div class="doc-share-buttons">
+                <button class="share-btn" onclick="shareDocument('twitter')" title="Share on Twitter">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M23 3a10.9 10.9 0 01-3.14 1.53 4.48 4.48 0 00-7.86 3v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2c9 5 20 0 20-11.5a4.5 4.5 0 00-.08-.83A7.72 7.72 0 0023 3z"/>
+                    </svg>
+                </button>
+                <button class="share-btn" onclick="shareDocument('linkedin')" title="Share on LinkedIn">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6zM2 9h4v12H2z"/>
+                        <circle cx="4" cy="4" r="2"/>
+                    </svg>
+                </button>
+                <button class="share-btn" onclick="copyLink()" title="Copy Link">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/>
+                        <path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </aside>
+</div>
+{{end}}
