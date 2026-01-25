@@ -35,8 +35,5 @@ app-deploy-tag:
 app-delete-tag:
 	bash bin/app/delete-tag.sh $(filter-out $@,$(MAKECMDGOALS))
 
-k8s-local-forward:
-	bash bin/k8s/local-forward.sh
-
 %:
 	@:

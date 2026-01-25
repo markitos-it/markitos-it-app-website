@@ -21,3 +21,4 @@ go.work.sum
 # Secrets
 nogit/
 bin/markitos-app
+**/markitos-it-resources-nogit

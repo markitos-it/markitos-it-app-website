@@ -6,3 +6,4 @@ bin
 *.md
 Makefile
 deployment
+**/markitos-it-resources-nogit
