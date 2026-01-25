@@ -4,7 +4,7 @@ metadata:
   name: markitos-it-app-website-deployment
   namespace: default
 spec:
-  replicas: 3
+  replicas: 1
   selector:
     matchLabels:
       app: markitos-it-app-website-pods
@@ -59,3 +59,23 @@ spec:
             name: markitos-it-app-website-service
             port:
               number: 8080
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: markitos-it-app-website-hpa
+  namespace: default
+spec:
+  minReplicas: 1
+  maxReplicas: 3
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: markitos-it-app-website-deployment
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        averageUtilization: 50
+        type: Utilization
