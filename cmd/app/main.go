@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"net/http"
+	"os"
 
 	"markitos-it-app-website/internal/infrastructure/http/handlers"
 )
@@ -41,4 +42,12 @@ func main() {
 	if err := http.ListenAndServe(addr, mux); err != nil {
 		log.Fatal(err)
 	}
+}
+
+func getEnv(key, fallback string) string {
+	value := fallback
+	if v := os.Getenv(key); v != "" {
+		value = v
+	}
+	return value
 }

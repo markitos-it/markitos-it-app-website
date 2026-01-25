@@ -12,7 +12,8 @@ coverage.*
 
 # Environment
 .env
-.env.local
+*.env
+!.env.example
 
 # Go workspace
 go.work
