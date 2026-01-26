@@ -25,6 +25,13 @@ spec:
             path: /
             port: 8080
           initialDelaySeconds: 5
+        resources:
+          requests:
+            cpu: "50m"      
+            memory: "128Mi"  
+          limits:
+            cpu: "500m"      
+            memory: "256Mi"  
 ---
 apiVersion: v1
 kind: Service
@@ -49,7 +56,7 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-  - host: markitos.local
+  - host: markitos.it.ing.test
     http:
       paths:
       - path: /
@@ -79,9 +86,3 @@ spec:
       target:
         averageUtilization: 50
         type: Utilization
-    type: Resource
-    resource:
-      name: memory
-      target:
-        averageUtilization: 50
-        type: Utilization 
