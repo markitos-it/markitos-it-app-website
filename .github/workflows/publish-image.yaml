@@ -7,9 +7,9 @@ on:
   workflow_dispatch:
 
 env:
-  PROJECT_ID: markitos-it-images
-  REGION: europe-southwest1
-  REPOSITORY: private
+  PROJECT_ID: ${{ vars.PROJECT_ID || 'markitos-it-images' }}
+  REGION: ${{ vars.REGION || 'europe-southwest1' }}
+  REPOSITORY: ${{ vars.REPOSITORY || 'private' }}
   IMAGE_NAME: ${{ github.event.repository.name }}
 
 jobs:
