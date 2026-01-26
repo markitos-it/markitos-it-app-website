@@ -146,18 +146,10 @@ func (h *DocsHandler) View(w http.ResponseWriter, r *http.Request) {
 	path := r.URL.Path
 	docID := strings.TrimPrefix(path, "/docs/")
 
-	docs, err := documents.GetAllDocuments()
+	doc, err := documents.GetDocumentById(docID)
 	if err != nil {
-		http.Error(w, "Error loading documents", http.StatusInternalServerError)
+		http.Error(w, "Error loading document", http.StatusInternalServerError)
 		return
-	}
-
-	var doc *documents.Document
-	for i := range docs {
-		if docs[i].ID == docID {
-			doc = &docs[i]
-			break
-		}
 	}
 
 	if doc == nil {

@@ -17,9 +17,12 @@ spec:
       - name: gcp-artifact-registry-secret
       containers:
       - name: markitos-it-app-website-container
-        image: europe-southwest1-docker.pkg.dev/markitos-it-images/private/markitos-it-app-website:1.4.0
+        image: europe-southwest1-docker.pkg.dev/markitos-it-images/private/markitos-it-app-website:1.0.0
         ports:
         - containerPort: 8080
+        env:
+        - name: DOCS_SERVICE_ADDR
+          value: "markitos-it-svc-documents-service.default.svc.cluster.local:8888"
         readinessProbe:
           httpGet:
             path: /

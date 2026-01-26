@@ -2,7 +2,7 @@ FROM golang:1.24-alpine AS builder
 
 WORKDIR /build
 
-COPY go.mod ./
+COPY go.* ./
 RUN go mod download
 
 COPY . .

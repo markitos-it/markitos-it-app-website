@@ -3,12 +3,56 @@ package documents
 import (
 	"encoding/base64"
 	"io"
+	"log"
 	"markitos-it-app-website/internal/templates"
 )
 
-// GetAllDocuments retorna todos los documentos con su contenido en base64
-// Simula cómo vendrían los datos desde una API
+// GetAllDocuments retorna todos los documentos desde el servicio gRPC
+// Si falla, utiliza los datos locales como fallback
 func GetAllDocuments() ([]Document, error) {
+	// Intenta obtener los documentos desde el servicio gRPC
+	docs, err := GetAllDocumentsFromService()
+	if err == nil {
+		log.Printf("✅ Loaded %d documents from gRPC service", len(docs))
+		return docs, nil
+	}
+
+	log.Printf("⚠️  Failed to fetch from gRPC service: %v. Using local fallback.", err)
+
+	// Si falla, utiliza los datos locales como fallback
+	return getLocalDocuments()
+}
+
+// GetDocumentById retorna un documento por su ID
+// Intenta obtenerlo desde el servicio gRPC, si falla busca en datos locales
+func GetDocumentById(id string) (*Document, error) {
+	// Intenta obtener desde el servicio gRPC
+	doc, err := GetDocumentByIdFromService(id)
+	if err == nil {
+		log.Printf("✅ Document '%s' loaded from gRPC service", id)
+		return doc, nil
+	}
+
+	log.Printf("⚠️  Failed to load document '%s' from gRPC service: %v", id, err)
+	log.Println("📚 Searching in local documents...")
+
+	// Fallback: busca en datos locales
+	docs, err := getLocalDocuments()
+	if err != nil {
+		return nil, err
+	}
+
+	for i := range docs {
+		if docs[i].ID == id {
+			return &docs[i], nil
+		}
+	}
+
+	return nil, nil
+}
+
+// getLocalDocuments retorna los documentos desde el almacenamiento local
+func getLocalDocuments() ([]Document, error) {
 	docsMetadata := []struct {
 		ID          string
 		Title       string
