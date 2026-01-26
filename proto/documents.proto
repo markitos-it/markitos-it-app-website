@@ -1,0 +1,44 @@
+syntax = "proto3";
+
+package documents;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "markitos-it-app-website/proto";
+
+// Document representa un documento en el sistema
+message Document {
+  string id = 1;
+  string title = 2;
+  string description = 3;
+  string category = 4;
+  repeated string tags = 5;
+  google.protobuf.Timestamp updated_at = 6;
+  string content_b64 = 7;
+  string cover_image = 8;
+}
+
+// Request para obtener todos los documentos
+message GetAllDocumentsRequest {}
+
+// Response con lista de documentos
+message GetAllDocumentsResponse {
+  repeated Document documents = 1;
+  int32 total = 2;
+}
+
+// Request para obtener un documento por ID
+message GetDocumentByIdRequest {
+  string id = 1;
+}
+
+// Response con un documento
+message GetDocumentByIdResponse {
+  Document document = 1;
+}
+
+// Servicio de documentos
+service DocumentService {
+  rpc GetAllDocuments(GetAllDocumentsRequest) returns (GetAllDocumentsResponse);
+  rpc GetDocumentById(GetDocumentByIdRequest) returns (GetDocumentByIdResponse);
+}

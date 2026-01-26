@@ -7,7 +7,7 @@ import (
 	"os"
 	"time"
 
-	pb "markitos-it-svc-documents/proto"
+	pb "markitos-it-app-website/proto"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
