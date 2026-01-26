@@ -69,6 +69,7 @@ func NewDocsHandler() (*DocsHandler, error) {
 		goldmark.WithRendererOptions(
 			html.WithHardWraps(),
 			html.WithXHTML(),
+			html.WithUnsafe(), // allow raw HTML (iframe) so the YouTube player renders
 		),
 	)
 
