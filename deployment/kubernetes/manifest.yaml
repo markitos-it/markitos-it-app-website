@@ -7,11 +7,11 @@ spec:
   replicas: 1
   selector:
     matchLabels:
-      app: markitos-it-app-website-pods
+      name: markitos-it-app-website-pod
   template:
     metadata:
       labels:
-        app: markitos-it-app-website-pods
+        name: markitos-it-app-website-pod
     spec:
       imagePullSecrets:
       - name: gcp-artifact-registry-secret
@@ -44,7 +44,7 @@ metadata:
 spec:
   type: ClusterIP
   selector:
-    app:  markitos-it-app-website-pods
+    name: markitos-it-app-website-pod
   ports:
   - port: 8080
     targetPort: 8080
@@ -87,5 +87,5 @@ spec:
     resource:
       name: cpu
       target:
-        averageUtilization: 50
+        averageUtilization: 70
         type: Utilization
