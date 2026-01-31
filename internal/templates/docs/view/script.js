@@ -2,41 +2,60 @@
 function generateTableOfContents() {
     const content = document.querySelector('.doc-content');
     const tocContainer = document.getElementById('tableOfContents');
-    
+
     if (!content || !tocContainer) return;
-    
+
     const headings = content.querySelectorAll('h2, h3');
-    
+
     if (headings.length === 0) {
         tocContainer.innerHTML = '<p style="color: var(--text-light); font-size: 0.85rem;">No headings found</p>';
         return;
     }
-    
+
+    const usedIds = new Set();
+    const slugify = (value) => value
+        .toLowerCase()
+        .normalize('NFD').replace(/\p{Diacritic}/gu, '')
+        .replace(/[^a-z0-9\s-]/g, '')
+        .trim()
+        .replace(/\s+/g, '-')
+        .replace(/-+/g, '-');
+
     headings.forEach((heading, index) => {
         const level = heading.tagName.toLowerCase();
-        const text = heading.textContent;
-        const id = `heading-${index}`;
-        
-        // Add ID to heading for linking
-        heading.id = id;
-        
+        const text = heading.textContent.trim();
+
+        let id = heading.id;
+        if (!id) {
+            id = slugify(text) || `heading-${index}`;
+        }
+
+        let uniqueId = id;
+        let counter = 2;
+        while (usedIds.has(uniqueId)) {
+            uniqueId = `${id}-${counter}`;
+            counter += 1;
+        }
+        usedIds.add(uniqueId);
+        heading.id = uniqueId;
+
         // Create TOC link
         const link = document.createElement('a');
-        link.href = `#${id}`;
+        link.href = `#${uniqueId}`;
         link.textContent = text;
         link.dataset.level = level.replace('h', '');
-        
+
         link.addEventListener('click', (e) => {
             e.preventDefault();
             heading.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            
+
             // Update URL without scrolling
-            history.pushState(null, null, `#${id}`);
-            
+            history.pushState(null, null, `#${uniqueId}`);
+
             // Update active state
             updateActiveTocLink(link);
         });
-        
+
         tocContainer.appendChild(link);
     });
 }
@@ -53,9 +72,9 @@ function updateActiveTocLink(activeLink) {
 function initScrollSpy() {
     const headings = document.querySelectorAll('.doc-content h2, .doc-content h3');
     const tocLinks = document.querySelectorAll('.doc-toc a');
-    
+
     if (headings.length === 0 || tocLinks.length === 0) return;
-    
+
     const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
@@ -69,7 +88,7 @@ function initScrollSpy() {
     }, {
         rootMargin: '-80px 0px -80% 0px'
     });
-    
+
     headings.forEach(heading => observer.observe(heading));
 }
 
@@ -77,10 +96,10 @@ function initScrollSpy() {
 function shareDocument(platform) {
     const url = encodeURIComponent(window.location.href);
     const title = encodeURIComponent(document.querySelector('.doc-main-title').textContent);
-    
+
     let shareUrl;
-    
-    switch(platform) {
+
+    switch (platform) {
         case 'twitter':
             shareUrl = `https://twitter.com/intent/tweet?url=${url}&text=${title}`;
             break;
@@ -91,7 +110,7 @@ function shareDocument(platform) {
             shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${url}`;
             break;
     }
-    
+
     if (shareUrl) {
         window.open(shareUrl, '_blank', 'width=600,height=400');
     }
@@ -99,18 +118,18 @@ function shareDocument(platform) {
 
 function copyLink() {
     const url = window.location.href;
-    
+
     navigator.clipboard.writeText(url).then(() => {
         // Show feedback
         const btn = event.currentTarget;
         const originalHTML = btn.innerHTML;
-        
+
         btn.innerHTML = `
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <polyline points="20 6 9 17 4 12"/>
             </svg>
         `;
-        
+
         setTimeout(() => {
             btn.innerHTML = originalHTML;
         }, 2000);
@@ -123,10 +142,10 @@ function copyLink() {
 // Code block enhancements
 function enhanceCodeBlocks() {
     const codeBlocks = document.querySelectorAll('.doc-content pre code');
-    
+
     codeBlocks.forEach(block => {
         const pre = block.parentElement;
-        
+
         // Add copy button
         const copyBtn = document.createElement('button');
         copyBtn.className = 'code-copy-btn';
@@ -138,7 +157,7 @@ function enhanceCodeBlocks() {
                 copyBtn.innerHTML = 'Copy';
             }, 2000);
         };
-        
+
         pre.style.position = 'relative';
         copyBtn.style.cssText = `
             position: absolute;
@@ -154,10 +173,10 @@ function enhanceCodeBlocks() {
             opacity: 0.8;
             transition: opacity 0.2s;
         `;
-        
+
         copyBtn.onmouseover = () => copyBtn.style.opacity = '1';
         copyBtn.onmouseout = () => copyBtn.style.opacity = '0.8';
-        
+
         pre.appendChild(copyBtn);
     });
 }
@@ -167,7 +186,7 @@ document.addEventListener('DOMContentLoaded', () => {
     generateTableOfContents();
     initScrollSpy();
     enhanceCodeBlocks();
-    
+
     // Handle initial hash
     if (window.location.hash) {
         setTimeout(() => {
@@ -193,13 +212,13 @@ function initReadingProgress() {
         transition: width 0.1s ease;
     `;
     document.body.appendChild(progressBar);
-    
+
     window.addEventListener('scroll', () => {
         const windowHeight = window.innerHeight;
         const documentHeight = document.documentElement.scrollHeight - windowHeight;
         const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
         const progress = (scrollTop / documentHeight) * 100;
-        
+
         progressBar.style.width = `${progress}%`;
     });
 }

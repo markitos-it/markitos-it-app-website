@@ -1,20 +1,16 @@
 {{define "navbar"}}
 <nav class="navbar">
     <div class="nav-content">
-        <div class="logo" onclick="location.href='/'"><strong>Artifact</strong>Hub</div>
+        <div class="logo" onclick="location.href='/'" aria-label="MarkitosIT">
+            <span class="logo-mark">Markitos</span><span class="logo-it">IT</span>
+        </div>
         <input type="text" class="search-bar" placeholder="Search packages...">
         <div class="nav-menu">
             <div class="nav-menu-item">
                 <a href="/" class="nav-menu-title">Home</a>
-                <div class="nav-submenu">
-                    <a href="/">Inicio</a>
-                </div>
             </div>
             <div class="nav-menu-item">
-                <a href="/docs" class="nav-menu-title">Documentación</a>
-                <div class="nav-submenu">
-                    <a href="/docs">Kubernetes</a>
-                </div>
+                <a href="/docs" class="nav-menu-title">Docs</a>
             </div>
         </div>
     </div>

@@ -10,7 +10,7 @@
             <label class="filter-label">Category</label>
             <div class="filter-pills" id="categoryFilters">
                 {{range .Categories}}
-                <button class="filter-pill {{if eq . "All"}}active{{end}}" data-category="{{.}}">
+                <button class="filter-pill {{if eq . " All"}}active{{end}}" data-category="{{.}}">
                     {{.}}
                 </button>
                 {{end}}
@@ -19,25 +19,15 @@
 
         <div class="filter-group">
             <label class="filter-label">Search</label>
-            <input 
-                type="text" 
-                id="searchInput" 
-                class="search-input" 
-                placeholder="Search documentation..."
-            />
+            <input type="text" id="searchInput" class="search-input" placeholder="Search documentation..." />
         </div>
     </div>
 
     <div class="docs-grid" id="docsGrid">
         {{range .Documents}}
-        <article 
-            class="doc-card" 
-            data-id="{{.ID}}"
-            data-category="{{.Category}}"
-            data-tags="{{range .Tags}}{{.}} {{end}}"
-            data-title="{{.Title}}"
-            data-description="{{.Description}}"
-        >
+        <article class="doc-card" data-id="{{.ID}}" data-category="{{.Category}}"
+            data-tags="{{range .Tags}}{{.}} {{end}}" data-title="{{.Title}}" data-description="{{.Description}}"
+            onclick="viewDocument('{{.ID}}')" role="button" tabindex="0" aria-label="View document {{.Title}}">
             <div class="doc-card-header">
                 <span class="doc-category-badge">{{.Category}}</span>
                 <span class="doc-date">{{.UpdatedAt}}</span>
@@ -49,7 +39,7 @@
                 <span class="doc-tag">{{.}}</span>
                 {{end}}
             </div>
-            <button class="doc-action-btn" onclick="viewDocument('{{.ID}}')">
+            <button class="doc-action-btn" type="button">
                 View Document →
             </button>
         </article>
